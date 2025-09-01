@@ -145,6 +145,176 @@ REACT_APP_API_URL=http://localhost:5000
 
 Mock 데이터는 `backend/data/mock_keywords.json` 파일에 정의되어 있습니다.
 
+## 트러블슈팅
+
+### 일반적인 문제 해결
+
+#### 1. 포트 충돌 오류
+```
+Error: listen EADDRINUSE: address already in use :::5000
+```
+**해결 방법:**
+```bash
+# Windows
+netstat -ano | findstr :5000
+taskkill /PID <PID> /F
+
+# macOS/Linux
+lsof -ti:5000 | xargs kill -9
+```
+
+#### 2. npm install 실패
+```
+npm ERR! code ENOTFOUND
+```
+**해결 방법:**
+- 인터넷 연결 확인
+- npm 캐시 정리: `npm cache clean --force`
+- 프록시 설정 확인
+
+#### 3. CORS 오류
+```
+Access to XMLHttpRequest at 'http://localhost:5000' from origin 'http://localhost:3000' has been blocked by CORS policy
+```
+**해결 방법:**
+- 백엔드에서 CORS 미들웨어가 제대로 설정되었는지 확인
+- 프론트엔드에서 올바른 API URL 사용
+
+#### 4. 빌드 실패
+```
+Module not found: Can't resolve 'axios'
+```
+**해결 방법:**
+- 패키지 재설치: `rm -rf node_modules && npm install`
+- package.json 확인
+
+#### 5. 환경 변수 오류
+```
+REACT_APP_API_URL is not defined
+```
+**해결 방법:**
+- `.env` 파일 생성 및 환경 변수 설정
+- 서버 재시작
+
+### 개발 환경별 문제
+
+#### Windows
+- PowerShell에서 실행 시 경로 문제: `./commands.sh` 대신 `bash commands.sh` 사용
+- 권한 문제: 관리자 권한으로 터미널 실행
+
+#### macOS
+- Homebrew 설치 권장: Node.js 및 npm 설치용
+- 포트 권한: 1024 이하 포트는 sudo 필요
+
+#### Linux
+- 권한 문제: `chmod +x commands.sh` 실행
+- 의존성 문제: 시스템 패키지 설치 (예: `sudo apt-get install build-essential`)
+
+### 디버깅 팁
+- 로그 파일 확인: `development.log`
+- 브라우저 개발자 도구의 Network 탭 확인
+- 백엔드 로그: `cd backend && npm run dev` 실행 후 터미널 확인
+
+## 기여 가이드
+
+### 코드 기여 방법
+
+1. **포크 및 클론**
+```bash
+git clone https://github.com/your-username/marketing-keyword-recommend.git
+cd marketing-keyword-recommend
+```
+
+2. **개발 환경 설정**
+```bash
+./commands.sh setup
+```
+
+3. **브랜치 생성**
+```bash
+git checkout -b feature/your-feature-name
+```
+
+4. **코드 변경**
+- 백엔드 변경: `backend/` 디렉토리
+- 프론트엔드 변경: `frontend/` 디렉토리
+- 문서 변경: `README.md`, `commands.sh`
+
+5. **테스트 및 검증**
+```bash
+./commands.sh test
+./commands.sh build
+```
+
+6. **커밋 및 푸시**
+```bash
+git add .
+git commit -m "Add: [기능 설명]"
+git push origin feature/your-feature-name
+```
+
+7. **풀 리퀘스트 생성**
+- GitHub에서 풀 리퀘스트 생성
+- 변경 사항 상세히 설명
+- 관련 이슈 연결
+
+### 코딩 표준
+
+#### JavaScript/Node.js
+- ESLint 규칙 준수
+- async/await 사용
+- 의미 있는 변수명 사용
+- 주석으로 복잡한 로직 설명
+
+#### React
+- 함수형 컴포넌트와 Hooks 사용
+- 컴포넌트 분리 및 재사용성 고려
+- PropTypes 또는 TypeScript 사용 고려
+
+#### Git 커밋 메시지
+```
+type: description
+
+[선택적 본문]
+
+[선택적 footer]
+```
+
+**타입 종류:**
+- `feat`: 새로운 기능
+- `fix`: 버그 수정
+- `docs`: 문서 변경
+- `style`: 코드 스타일 변경
+- `refactor`: 코드 리팩토링
+- `test`: 테스트 추가
+- `chore`: 빌드, 설정 변경
+
+### 이슈 보고
+
+버그 리포트 또는 기능 요청 시 다음 정보를 포함해주세요:
+
+**버그 리포트:**
+- 재현 단계
+- 예상 동작
+- 실제 동작
+- 환경 정보 (OS, Node.js 버전 등)
+- 스크린샷 (필요시)
+
+**기능 요청:**
+- 기능 설명
+- 사용 사례
+- 구현 제안 (선택적)
+
+### 문의
+
+질문이나 도움이 필요하시면:
+- GitHub Issues 사용
+- 이메일: your-email@example.com
+
+### 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 있습니다. 기여 시 해당 라이선스에 동의하는 것으로 간주됩니다.
+
 ## 폴더 구조
 
 ```
@@ -272,3 +442,30 @@ Firebase Hosting    Render           External Service
 - [프로젝트 아키텍처](#프로젝트-아키텍처)
 
 © 2025 Naver Ad Keyword Recommender. MIT License.
+
+---
+
+## 📋 구현 체크리스트
+
+### 🔙 백엔드 구현 순서
+
+- **[1일차]** server.js - 기본 Express 서버 구성
+- **[2일차]** routes/keywords.js - API 엔드포인트 구현
+- **[3일차]** services/keywordExpander.js - 키워드 확장 로직
+- **[4일차]** services/naverDataLab.js - 데이터 수집 (Mock 데이터부터)
+- **[5일차]** services/recommendationEngine.js - 추천 알고리즘
+- **[6일차]** 에러 처리 및 테스트
+
+### 🎨 프론트엔드 구현 순서
+
+- **[7일차]** React 프로젝트 세팅 + App.js
+- **[8일차]** components/keyword/KeywordInput.js
+- **[9일차]** services/api.js + hooks/useKeywordAnalysis.js
+- **[10일차]** components/keyword/ResultsTable.js
+- **[11일차]** utils/formatters.js + Loading 컴포넌트
+- **[12일차]** 스타일링 및 반응형 처리
+
+### 🚀 통합 및 배포
+
+- **[13일차]** 프론트엔드-백엔드 연동 테스트
+- **[14일차]** Firebase + Render 배포 설정

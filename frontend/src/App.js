@@ -67,7 +67,7 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {results.recommendations.slice(0, 10).map((item, index) => (
+              {results.recommendations.map((item, index) => (
                 <tr key={index}>
                   <td style={{ padding: '8px' }}>{item.keyword}</td>
                   <td style={{ padding: '8px' }}>{item.searchVolume}</td>

@@ -23,7 +23,7 @@ function App() {
     setAnalysisState({ isLoading: true, results: null, error: null });
 
     try {
-      const response = await fetch('http://localhost:5000/api/keywords/analyze', {
+      const response = await fetch('https://marketingkeywordrecommend.onrender.com/api/keywords/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

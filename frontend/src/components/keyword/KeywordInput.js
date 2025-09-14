@@ -6,7 +6,8 @@ import {
   Chip,
   Typography,
   Stack,
-  Alert
+  Alert,
+  Divider
 } from '@mui/material';
 
 function KeywordInput({ onSubmit }) {
@@ -107,11 +108,57 @@ function KeywordInput({ onSubmit }) {
           </Stack>
         </Box>
 
+        <Divider />
+
+        {/* 빠른 설정 섹션 추가 */}
         <Box>
           <Typography variant="subtitle2" gutterBottom>
-            예시 키워드:
+            ⚡ 빠른 설정:
           </Typography>
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Button 
+              size="small"
+              variant="outlined"
+              onClick={() => handleExampleKeywords(['속기', '녹취', '속기학원'])}
+            >
+              속기 관련
+            </Button>
+            <Button 
+              size="small"
+              variant="outlined"
+              onClick={() => handleExampleKeywords(['카페', '커피', '원두'])}
+            >
+              카페 관련
+            </Button>
+            <Button 
+              size="small"
+              variant="outlined"
+              onClick={() => handleExampleKeywords(['병원', '의료', '진료'])}
+            >
+              병원 관련
+            </Button>
+            <Button 
+              size="small"
+              variant="outlined"
+              onClick={() => handleExampleKeywords(['학원', '교육', '강의'])}
+            >
+              학원 관련
+            </Button>
+            <Button 
+              size="small"
+              variant="outlined"
+              onClick={() => handleExampleKeywords(['부동산', '아파트', '매매'])}
+            >
+              부동산 관련
+            </Button>
+          </Stack>
+        </Box>
+
+        <Box>
+          <Typography variant="subtitle2" gutterBottom>
+            💡 개별 추가:
+          </Typography>
+          <Stack direction="row" spacing={1} flexWrap="wrap">
             <Button 
               size="small" 
               onClick={() => handleExampleKeywords(['속기', '녹취', '속기학원'])}

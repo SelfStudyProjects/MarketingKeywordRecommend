@@ -1,0 +1,10 @@
+name: Keep Alive
+on:
+  schedule:
+    - cron: '*/14 * * * *'  # 14분마다 실행
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping server
+        run: curl https://marketingkeywordrecommend.onrender.com/health

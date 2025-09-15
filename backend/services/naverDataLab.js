@@ -9,6 +9,11 @@ class NaverDataLab {
     }
     
     async fetchTrendData(keywords) {
+
+        console.log('🔥 네이버 API 호출 시도:', keywords);
+        console.log('🔑 CLIENT_ID:', this.clientId ? '설정됨' : '없음');
+
+
         // 최근 1년간 데이터 요청
         const endDate = new Date();
         const startDate = new Date();
@@ -23,16 +28,21 @@ class NaverDataLab {
                 keywords: [keyword]
             }))
         };
-
-        const response = await axios.post(this.apiUrl, requestBody, {
-            headers: {
-                'X-Naver-Client-Id': this.clientId,
-                'X-Naver-Client-Secret': this.clientSecret,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        return response.data;
+        
+        try {
+            const response = await axios.post(this.apiUrl, requestBody, {
+                headers: {
+                    'X-Naver-Client-Id': this.clientId,
+                    'X-Naver-Client-Secret': this.clientSecret,
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log('✅ API 응답 성공:', response.status);
+            return response.data;
+        } catch (error) {
+            console.log('❌ API 호출 실패:', error.message);
+            throw error;
+        }
     }
 
     chunkArray(array, size) {

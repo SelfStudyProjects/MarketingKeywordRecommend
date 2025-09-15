@@ -14,5 +14,9 @@ const keywordsRouter = require('./routes/keywords');
 app.use('/api/keywords', keywordsRouter);
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 서버가 http://localhost:${PORT} 에서 실행중입니다`);
+  console.log(`🚀 서버가 포트 ${PORT}에서 실행중입니다`);
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date() });
 });

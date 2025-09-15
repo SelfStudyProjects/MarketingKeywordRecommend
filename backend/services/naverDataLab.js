@@ -58,27 +58,42 @@ class NaverDataLab {
     }
 
     processTrendData(keywords, trendData) {
-        console.log('📈 네이버 API 응답 데이터:', JSON.stringify(trendData, null, 2));
-
         const results = [];
         
         keywords.forEach((keyword, index) => {
             const groupData = trendData.results[index];
-            console.log(`키워드 "${keyword}" 데이터:`, groupData);
-
             const avgSearchVolume = this.calculateAverageVolume(groupData.data);
-            console.log(`평균 검색량: ${avgSearchVolume}`);
+            const competition = this.estimateCompetition(keyword);
             
             results.push({
                 keyword: keyword,
                 searchVolume: Math.max(100, avgSearchVolume * 10),
-                competition: this.estimateCompetition(keyword),
-                avgCPC: this.estimateAvgCPC(keyword, this.estimateCompetition(keyword)),
+                competition: competition,
+                avgCPC: this.calculateRealisticCPC(keyword, avgSearchVolume, competition), // 개선된 메서드
                 trendScore: Math.floor(Math.random() * 40) + 50
             });
         });
         
         return results;
+    }
+
+    calculateRealisticCPC(keyword, searchVolume, competition) {
+        // 기본 경쟁도별 단가
+        const baseMap = { 'low': 120, 'medium': 180, 'high': 250 };
+        let baseCPC = baseMap[competition];
+        
+        // 검색량에 따른 조정 (인기 키워드일수록 비싸짐)
+        const volumeMultiplier = Math.min(2.0, 1 + (searchVolume / 1000));
+        
+        // 키워드 특성에 따른 조정
+        if (keyword.includes('전문') || keyword.includes('컨설팅')) baseCPC *= 1.3;
+        if (keyword.includes('무료') || keyword.includes('저렴')) baseCPC *= 0.7;
+        if (keyword.includes('서울') || keyword.includes('강남')) baseCPC *= 1.2;
+        
+        // 최종 계산 + 랜덤 요소
+        const finalCPC = baseCPC * volumeMultiplier * (0.8 + Math.random() * 0.4);
+        
+        return Math.round(finalCPC);
     }
 
     calculateAverageVolume(dataPoints) {

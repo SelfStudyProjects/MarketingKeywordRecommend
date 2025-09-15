@@ -58,11 +58,16 @@ class NaverDataLab {
     }
 
     processTrendData(keywords, trendData) {
+        console.log('📈 네이버 API 응답 데이터:', JSON.stringify(trendData, null, 2));
+
         const results = [];
         
         keywords.forEach((keyword, index) => {
             const groupData = trendData.results[index];
+            console.log(`키워드 "${keyword}" 데이터:`, groupData);
+
             const avgSearchVolume = this.calculateAverageVolume(groupData.data);
+            console.log(`평균 검색량: ${avgSearchVolume}`);
             
             results.push({
                 keyword: keyword,

@@ -3,11 +3,10 @@ const router = express.Router();
 
 // 서비스
 const KeywordExpander = require('../services/keywordExpander');
-const NaverDataLab = require('../services/naverDataLab');
+const naverDataLab = require('../services/naverDataLab');
 const recommendationEngine = require('../services/recommendationEngine');
 const IntelligentKeywordExpander = require('../services/intelligentKeywordExpander');
 
-const naverDataLab = new NaverDataLab();
 const intelligentExpander = new IntelligentKeywordExpander({ naverDataLab });
 
 // POST /api/keywords/analyze

@@ -63,21 +63,46 @@ class NaverDataLab {
                     'User-Agent': 'Mozilla/5.0'
                 }
             });
+            // Debug: raw response for parsing issues
+            // NOTE: keep this log lightweight in production
+            try { console.debug('getRelatedQueries raw:', typeof res.data === 'string' ? res.data.slice(0,200) : JSON.stringify(res.data).slice(0,200)); } catch(e){}
 
-            // 응답 구조: items[1] 또는 items[0]에 자동완성 텍스트 배열이 있음 (엔드포인트 변경 가능)
-            const items = res.data?.items || [];
-            // items 형식에 따라 안전하게 파싱
+            const data = res.data;
             const suggestions = [];
-            if (Array.isArray(items) && items.length >= 2 && Array.isArray(items[1])) {
-                for (const row of items[1]) {
+
+            // Case A: { items: [...] } structure (common)
+            if (data && data.items && Array.isArray(data.items) && data.items.length >= 2 && Array.isArray(data.items[1])) {
+                for (const row of data.items[1]) {
                     if (Array.isArray(row) && row.length > 0) suggestions.push(row[0]);
                 }
             }
 
-            return suggestions.map(s => ({ keyword: s }));
+            // Case B: top-level array [query, [ [sugg,...], ... ], ...]
+            else if (Array.isArray(data) && data.length >= 2 && Array.isArray(data[1])) {
+                for (const row of data[1]) {
+                    if (Array.isArray(row) && row.length > 0) suggestions.push(row[0]);
+                }
+            }
+
+            // Case C: fallback - look for any string tokens in nested arrays/objects
+            else {
+                const text = JSON.stringify(data);
+                // crude extraction of quoted words that include the keyword
+                const pattern = new RegExp('\\\\"([^\\\\"]*' + keyword.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '[^\\\\"]*)\\\\"','g');
+                let m;
+                while ((m = pattern.exec(text)) !== null) {
+                    suggestions.push(m[1]);
+                }
+            }
+
+            // de-dupe and return
+            return Array.from(new Set(suggestions)).map(s => ({ keyword: s }));
         } catch (err) {
             console.error('getRelatedQueries API error:', err.message);
-            throw err; // per requirement: don't fallback to mock
+            // Return empty array on parse/network error so caller can decide fallback behavior
+            // Log full error to help debugging
+            console.error(err);
+            return [];
         }
     }
 

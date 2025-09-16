@@ -20,12 +20,7 @@ class IntelligentKeywordExpander {
       // 1. 시드 키워드 자체 포함
       all.push({ keyword: kw, source: 'seed', relevanceScore: 1.0 });
 
-      // 2. 프로필 기반 키워드 생성 (하드코딩된 패턴)
-      const profile = this._analyzeKeyword(kw);
-      const profileKeywords = this._generateByProfile(kw, profile);
-      all.push(...profileKeywords);
-
-      // 3. 네이버 연관검색어 수집
+      // 2. 네이버 연관검색어 수집 (메인 소스)
       if (this.naver && typeof this.naver.getRelatedQueries === 'function') {
         try {
           console.log(`🔍 네이버 연관검색어 조회: ${kw}`);
@@ -36,7 +31,6 @@ class IntelligentKeywordExpander {
             for (const r of related) {
               const candidate = typeof r === 'string' ? r : (r.keyword || '');
               if (candidate && candidate !== kw) {
-                // 연관검색어는 원래 키워드를 포함하지 않아도 됨 (실제 네이버 연관검색어 동작)
                 all.push({ 
                   keyword: candidate, 
                   source: 'related',
@@ -52,7 +46,7 @@ class IntelligentKeywordExpander {
         }
       }
 
-      // 4. 트렌드 기반 키워드 (옵션)
+      // 3. 트렌드 기반 키워드 (옵션)
       if (includeTrends && this.naver && typeof this.naver.generateTrendBasedKeywords === 'function') {
         try {
           const trends = await this.naver.generateTrendBasedKeywords(kw);

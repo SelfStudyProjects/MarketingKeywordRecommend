@@ -45,6 +45,42 @@ class NaverDataLab {
         }
     }
 
+    // 자동완성/연관검색어 수집
+    async getRelatedQueries(keyword) {
+        if (!keyword) return [];
+        // 네이버 자동완성(연관검색어) 엔드포인트
+        const url = 'https://ac.search.naver.com/nx/ac';
+        try {
+            const res = await axios.get(url, {
+                params: {
+                    q: keyword,
+                    st: 1,
+                    r_format: 'json',
+                    r_enc: 'UTF-8',
+                    t_koreng: 1
+                },
+                headers: {
+                    'User-Agent': 'Mozilla/5.0'
+                }
+            });
+
+            // 응답 구조: items[1] 또는 items[0]에 자동완성 텍스트 배열이 있음 (엔드포인트 변경 가능)
+            const items = res.data?.items || [];
+            // items 형식에 따라 안전하게 파싱
+            const suggestions = [];
+            if (Array.isArray(items) && items.length >= 2 && Array.isArray(items[1])) {
+                for (const row of items[1]) {
+                    if (Array.isArray(row) && row.length > 0) suggestions.push(row[0]);
+                }
+            }
+
+            return suggestions.map(s => ({ keyword: s }));
+        } catch (err) {
+            console.error('getRelatedQueries API error:', err.message);
+            throw err; // per requirement: don't fallback to mock
+        }
+    }
+
     chunkArray(array, size) {
         const chunks = [];
         for (let i = 0; i < array.length; i += size) {
@@ -130,29 +166,14 @@ class NaverDataLab {
                 results.push(...processedData);
             } catch (error) {
                 console.error('API 호출 실패:', error.message);
-                // API 실패 시 Mock 데이터로 대체
-                const mockData = batch.map(keyword => this.generateRealisticMockData(keyword));
-                results.push(...mockData);
+                // Per requirement: do not use mock data, bubble up the error
+                throw error;
             }
         }
         
         return results;
     }
     
-    generateRealisticMockData(keyword) {
-        // 키워드 길이와 타입에 따른 현실적인 데이터 생성
-        const baseVolume = this.estimateSearchVolume(keyword);
-        const competition = this.estimateCompetition(keyword);
-        const avgCPC = this.estimateAvgCPC(keyword, competition);
-        
-        return {
-            keyword: keyword,
-            searchVolume: baseVolume + Math.floor(Math.random() * (baseVolume * 0.3)),
-            competition: competition,
-            avgCPC: avgCPC + Math.floor(Math.random() * 50),
-            trendScore: Math.floor(Math.random() * 40) + 50 // 50-90 범위
-        };
-    }
     
     estimateSearchVolume(keyword) {
         // 키워드 특성에 따른 검색량 추정

@@ -9,23 +9,39 @@ class IntelligentKeywordExpander {
   }
 
   async expandKeywords(seedKeywords = [], options = {}) {
-    const { maxKeywords = 50, includeTrends = true } = options;
+  const { maxKeywords = 20, includeTrends = true } = options;
     let all = [];
 
     for (const kw of seedKeywords) {
+      // 1) 기본 프로파일/문맥 기반 후보
       const profile = this._analyzeKeyword(kw);
       all.push(...this._generateByProfile(kw, profile));
       all.push(...this._generateSemanticVariants(kw, profile));
-      if (includeTrends && this.naver?.generateTrendBasedKeywords) {
-        const trends = await this.naver.generateTrendBasedKeywords(kw).catch(()=>[]);
-        all.push(...trends.map(t=>({ keyword: t.keyword, source:'trend', searchVolume: t.searchVolume, trendScore: t.growthRate })));
+
+      // 2) 네이버(또는 외부)에서 제공하는 관련 검색어/트렌드 후보를 우선적으로 수집
+      if (this.naver) {
+        // getRelatedQueries는 네이버 연관검색어/자동완성/트렌드에서 키워드 후보를 수집하도록 구현되어야 함
+        if (typeof this.naver.getRelatedQueries === 'function') {
+          const related = await this.naver.getRelatedQueries(kw).catch(()=>[]);
+          all.push(...(related || []).map(r=>({ keyword: r.keyword || r, source: 'related' })));
+        }
+
+        if (includeTrends && typeof this.naver.generateTrendBasedKeywords === 'function') {
+          const trends = await this.naver.generateTrendBasedKeywords(kw).catch(()=>[]);
+          all.push(...trends.map(t=>({ keyword: t.keyword, source:'trend', searchVolume: t.searchVolume, trendScore: t.growthRate })));
+        }
       }
     }
 
-    const unique = this._removeDuplicates(all.map(k => typeof k === 'string' ? { keyword: k } : k));
-    const withScores = await this._attachMetrics(unique);
-    const ranked = this._rankByRelevance(withScores);
-    return ranked.slice(0, maxKeywords);
+  const unique = this._removeDuplicates(all.map(k => typeof k === 'string' ? { keyword: k } : k));
+
+  // attach metrics using naver (if available) then rank
+  const withScores = await this._attachMetrics(unique);
+  const ranked = this._rankByRelevance(withScores);
+
+  // 최종적으로 입력된 키워드 자체는 우선순위로 보존하되,
+  // 결과는 최대 maxKeywords 까지만 반환 (중복 제거 및 네이버 기반 후보 우선)
+  return ranked.slice(0, maxKeywords);
   }
 
   _analyzeKeyword(keyword) {

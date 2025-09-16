@@ -34,7 +34,8 @@ router.post('/analyze', async (req, res) => {
     });
   } catch (err) {
     console.error('키워드 분석 오류:', err);
-    res.status(500).json({ success: false, message: '분석 중 오류가 발생했습니다' });
+    // TEMPORARY: return detailed error for debugging (remove in production)
+    res.status(500).json({ success: false, message: '분석 중 오류가 발생했습니다', error: err.message, stack: err.stack });
   }
 });
 

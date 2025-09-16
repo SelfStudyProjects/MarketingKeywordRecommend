@@ -65,16 +65,30 @@ class NaverDataLab {
             const avgSearchVolume = this.calculateAverageVolume(groupData.data);
             const competition = this.estimateCompetition(keyword);
             
+            let finalSearchVolume;
+            if (avgSearchVolume === 100) {
+                finalSearchVolume = this.estimateSearchVolume(keyword);
+            } else {
+                finalSearchVolume = Math.max(100, avgSearchVolume * 10);
+            }
+
             results.push({
                 keyword: keyword,
-                searchVolume: Math.max(100, avgSearchVolume * 10),
+                searchVolume: finalSearchVolume,
                 competition: competition,
-                avgCPC: this.calculateRealisticCPC(keyword, avgSearchVolume, competition), // 개선된 메서드
+                avgCPC: this.calculateRealisticCPC(keyword, avgSearchVolume, competition),
                 trendScore: Math.floor(Math.random() * 40) + 50
             });
         });
         
         return results;
+    }
+
+    estimateRealisticSearchVolume(keyword) {
+        if (keyword.includes('업체') || keyword.includes('견적')) return Math.floor(Math.random() * 200) + 50;
+        if (keyword.includes('가격') || keyword.includes('비용')) return Math.floor(Math.random() * 300) + 150;
+        if (keyword.includes('팁') || keyword.includes('가이드')) return Math.floor(Math.random() * 400) + 100;
+        return Math.floor(Math.random() * 500) + 100;
     }
 
     calculateRealisticCPC(keyword, searchVolume, competition) {

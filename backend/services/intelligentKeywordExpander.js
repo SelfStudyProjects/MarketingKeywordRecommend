@@ -12,23 +12,38 @@ class IntelligentKeywordExpander {
   const { maxKeywords = 20, includeTrends = true } = options;
     let all = [];
 
+    // Collect candidates from Naver related queries that include the seed keyword.
     for (const kw of seedKeywords) {
-      // 1) 기본 프로파일/문맥 기반 후보
-      const profile = this._analyzeKeyword(kw);
-      all.push(...this._generateByProfile(kw, profile));
-      all.push(...this._generateSemanticVariants(kw, profile));
+      // Always include the seed itself as a candidate
+      all.push({ keyword: kw, source: 'seed' });
 
-      // 2) 네이버(또는 외부)에서 제공하는 관련 검색어/트렌드 후보를 우선적으로 수집
-      if (this.naver) {
-        // getRelatedQueries는 네이버 연관검색어/자동완성/트렌드에서 키워드 후보를 수집하도록 구현되어야 함
-        if (typeof this.naver.getRelatedQueries === 'function') {
-          const related = await this.naver.getRelatedQueries(kw).catch(()=>[]);
-          all.push(...(related || []).map(r=>({ keyword: r.keyword || r, source: 'related' })));
+      if (!this.naver || typeof this.naver.getRelatedQueries !== 'function') {
+        // If no Naver integration, skip related collection (user requires API-only, so we will rely on naver)
+        continue;
+      }
+
+      // Fetch related queries from Naver and only keep those that include the seed keyword
+      const related = await this.naver.getRelatedQueries(kw);
+      if (Array.isArray(related)) {
+        for (const r of related) {
+          const candidate = typeof r === 'string' ? r : (r.keyword || '');
+          if (!candidate) continue;
+          // Only accept suggestions that contain the seed keyword (to avoid standalone '온라인', etc.)
+          if (candidate.includes(kw)) {
+            all.push({ keyword: candidate, source: 'related' });
+          }
         }
+      }
 
-        if (includeTrends && typeof this.naver.generateTrendBasedKeywords === 'function') {
-          const trends = await this.naver.generateTrendBasedKeywords(kw).catch(()=>[]);
-          all.push(...trends.map(t=>({ keyword: t.keyword, source:'trend', searchVolume: t.searchVolume, trendScore: t.growthRate })));
+      // Optionally include trend-based keywords but only if they contain the seed
+      if (includeTrends && typeof this.naver.generateTrendBasedKeywords === 'function') {
+        const trends = await this.naver.generateTrendBasedKeywords(kw);
+        if (Array.isArray(trends)) {
+          for (const t of trends) {
+            if (t && t.keyword && t.keyword.includes(kw)) {
+              all.push({ keyword: t.keyword, source: 'trend', searchVolume: t.searchVolume, trendScore: t.growthRate });
+            }
+          }
         }
       }
     }

@@ -12,7 +12,7 @@ import {
 
 function KeywordInput({ onSubmit }) {
   const [inputValue, setInputValue] = useState('');
-  const [keywords, setKeywords] = useState(['속기']);
+  const [keywords, setKeywords] = useState([]);
   const [errors, setErrors] = useState({});
 
   const handleInputChange = (event) => {

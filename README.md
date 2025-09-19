@@ -1,4 +1,4 @@
-# Naver Ad Keyword Recommender
+# Naver AD Keyword Recommender
 
 네이버 검색광고 키워드 추천 서비스는 React.js와 Node.js Express를 활용한 키워드 분석 및 추천 시스템입니다. 이 프로젝트는 특정 사업 도메인(현재: 속기)에서 네이버 파워링크 광고를 위한 최적의 키워드를 추천하여 광고 효율성을 극대화할 수 있도록 설계되었습니다.
 
